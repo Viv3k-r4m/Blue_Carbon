@@ -1,0 +1,13 @@
+{
+  "name": "blue-carbon-hardhat",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "dotenv": "^16.6.1",
+    "ethers": "^5.8.0",
+    "hardhat": "^2.27.1"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.5"
+  }
+}
