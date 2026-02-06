@@ -27,6 +27,14 @@ def cli():
     pass
 
 
+# ---------------------- SHOW OWNER --------------------------
+@cli.command()
+def owner():
+    """Show the owner of the registry."""
+    owner_addr = REG.functions.owner().call()
+    click.echo(f"Registry owner: {owner_addr}")
+
+
 # ---------------------- SHOW PROJECT -------------------------
 @cli.command()
 @click.argument("project_id", type=int)
@@ -41,9 +49,6 @@ def show(project_id):
     click.echo(f"Status: {p[5]}")
     click.echo(f"Submitted At: {p[6]}")
     click.echo(f"Updated At: {p[7]}")
-
-
-# ---------------------- ADD VERIFIER --------------------------
 @cli.command(name="add-verifier")
 @click.argument("address")
 def add_verifier(address):
@@ -95,6 +100,18 @@ def reject(project_id):
     click.echo(receipt.transactionHash.hex())
 
 
+# ---------------------- SUBMIT PROJECT ------------------------
+@cli.command()
+@click.argument("metadata_uri")
+@click.argument("claimed_tons", type=int)
+def submit(metadata_uri, claimed_tons):
+    tx = REG.functions.submitProject(metadata_uri, claimed_tons).build_transaction({"from": get_account()})
+    receipt = sign_and_send_raw(tx)
+    pid = REG.functions.nextProjectId().call() - 1  # since it increments after
+    click.echo(f"Project submitted with ID {pid}. Tx:", nl=False)
+    click.echo(receipt.transactionHash.hex())
+
+
 # ---------------------- ISSUE CREDITS -------------------------
 @cli.command()
 @click.argument("project_id", type=int)
@@ -103,14 +120,6 @@ def issue(project_id, recipient):
     tx = VM.functions.issueCredits(project_id, recipient).build_transaction({"from": get_account()})
     receipt = sign_and_send_raw(tx)
     click.echo("Credits issued. Tx:", nl=False)
-    click.echo(receipt.transactionHash.hex())
-
-@cli.command()
-@click.argument("project_id", type=int)
-def tokenize(project_id):
-    tx = REG.functions.markTokenized(project_id).build_transaction({"from": get_account()})
-    receipt = sign_and_send_raw(tx)
-    click.echo("Tokenized. Tx:", nl=False)
     click.echo(receipt.transactionHash.hex())
 
 if __name__ == "__main__":

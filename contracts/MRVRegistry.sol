@@ -95,9 +95,10 @@ contract MRVRegistry is Ownable {
         emit ProjectStatusChanged(projectId, p.status, msg.sender, 0);
     }
 
-    function markTokenized(uint256 projectId) external onlyOwner {
+    function markTokenized(uint256 projectId) external {
         Project storage p = projects[projectId];
         require(p.id != 0, "not found");
+        require(p.status == Status.Approved, "not approved");
 
         p.status = Status.Tokenized;
         p.updatedAt = block.timestamp;
