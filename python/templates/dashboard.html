@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blue Carbon - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary-dark sticky-top">
+        <container class="container-fluid">
+            <span class="navbar-brand mb-0 h1">🌊 Blue Carbon Admin</span>
+        </container>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Sidebar Navigation -->
+            <div class="col-md-3">
+                <div class="nav flex-column nav-pills" role="tablist">
+                    <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab">
+                        📊 Dashboard
+                    </button>
+                    <button class="nav-link" id="drone-tab" data-bs-toggle="tab" data-bs-target="#drone" type="button" role="tab">
+                        🚁 Drone Integration
+                    </button>
+                    <button class="nav-link" id="projects-tab" data-bs-toggle="tab" data-bs-target="#projects" type="button" role="tab">
+                        📋 Projects
+                    </button>
+                    <button class="nav-link" id="verifiers-tab" data-bs-toggle="tab" data-bs-target="#verifiers" type="button" role="tab">
+                        ✓ Verifiers
+                    </button>
+                    <button class="nav-link" id="explorer-tab" data-bs-toggle="tab" data-bs-target="#explorer" type="button" role="tab">
+                        🔍 Blockchain Explorer
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <div class="tab-content">
+                    <!-- Dashboard Tab -->
+                    <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+                        <h2>Dashboard</h2>
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Registry Owner</h5>
+                                        <div id="owner-info" class="owner-box">
+                                            <span class="spinner-border spinner-border-sm me-2"></span>
+                                            Loading...
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-primary mt-3" onclick="loadOwner()">
+                                            Refresh
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Quick Stats</h5>
+                                        <p>Network: <strong id="network-status">Checking...</strong></p>
+                                        <p>Connected Account: <code id="account-info">—</code></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Drone Integration Tab -->
+                    <div class="tab-pane fade" id="drone" role="tabpanel">
+                        <h2>Drone Integration</h2>
+                        
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">🚁 Submit Drone Project</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="drone-form">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">NDVI Value (0.0 - 1.0)</label>
+                                            <input type="number" id="drone-ndvi" class="form-control" placeholder="0.5" min="0" max="1" step="0.1" value="0.5">
+                                            <small class="text-muted">Vegetation index from drone imagery</small>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Area (hectares)</label>
+                                            <input type="number" id="drone-area" class="form-control" placeholder="1.0" min="0.1" step="0.1" value="1.0">
+                                            <small class="text-muted">Area of the project in hectares</small>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Images (comma-separated)</label>
+                                        <input type="text" id="drone-images" class="form-control" placeholder="img1.jpg, img2.jpg">
+                                        <small class="text-muted">Optional: List of drone images</small>
+                                    </div>
+                                    <button type="button" class="btn btn-primary" onclick="submitDroneProject()">Submit Project</button>
+                                </form>
+                                <div id="drone-result" class="mt-3"></div>
+                            </div>
+                        </div>
+
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">📊 Estimation Preview</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Estimated Biomass (Tons):</strong> <span id="biomass-preview" class="badge bg-info">—</span></p>
+                                <p><strong>Metadata URI:</strong> <code id="uri-preview">—</code></p>
+                                <button class="btn btn-sm btn-outline-primary" onclick="updateEstimate()">Calculate</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="tab-pane fade" id="projects" role="tabpanel">
+                        <h2>Project Management</h2>
+                        
+                        <!-- Projects List -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">📋 All Projects</h5>
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-sm btn-outline-primary mb-3" onclick="loadAllProjects()">
+                                    🔄 Refresh
+                                </button>
+                                <div id="projects-list" class="projects-table">
+                                    <div class="text-center"><span class="spinner-border spinner-border-sm"></span> Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Project Action Center -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">⚙️ Project Action Center</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info">
+                                    <strong>ℹ️ How it works:</strong> Enter a Project ID below and choose an action. The form will show what status the project is currently in.
+                                </div>
+                                
+                                <!-- Project ID Input (Unified) -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label"><strong>Select Project ID</strong></label>
+                                        <input type="number" id="action-project-id" class="form-control form-control-lg" placeholder="Enter Project ID" min="0" onchange="loadProjectForAction()">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label"><strong>Current Status</strong></label>
+                                        <div id="current-status" class="form-control form-control-lg bg-light text-muted">
+                                            — Enter ID above to check status
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="action-buttons" style="display: none;">
+                                    <hr>
+                                    
+                                    <!-- Status Workflow -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-12">
+                                            <p class="text-muted"><small>💡 Project Status Flow: <strong>Submitted</strong> → <strong>Under Review</strong> → <strong>Approved</strong> OR <strong>Rejected</strong></small></p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Set Under Review -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <button class="btn btn-warning w-100" onclick="performAction('under-review')">
+                                                👀 Move to Under Review
+                                            </button>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <small class="text-muted">Move submitted project to review stage</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Approve -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <div class="input-group">
+                                                <input type="number" id="action-tons" class="form-control" placeholder="Tons" min="0">
+                                                <button class="btn btn-success" onclick="performAction('approve')">✓ Approve</button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <small class="text-muted">Approve project with verified tons amount</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Reject -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <button class="btn btn-danger w-100" onclick="performAction('reject')">✗ Reject</button>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <small class="text-muted">Reject the project (cannot be undone)</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Issue Credits (Tokenize) -->
+                                    <div class="row mb-3" id="issue-credits-section" style="display: none;">
+                                        <div class="col-md-4">
+                                            <div class="input-group">
+                                                <input type="text" id="action-recipient" class="form-control form-control-sm" placeholder="Recipient 0x...">
+                                                <button class="btn btn-primary" onclick="performAction('issue-credits')">💰 Issue Credits</button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <small class="text-muted">Tokenize approved project and mint carbon credits to recipient</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Project Details Panel -->
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">📄 Full Project Details</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="project-details-full" class="text-muted">
+                                    <p>Select a project ID above to view full details here.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Verifiers Tab -->
+                    <div class="tab-pane fade" id="verifiers" role="tabpanel">
+                        <h2>Verifier Management</h2>
+                        
+                        <!-- Verifiers List -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">📜 Active Verifiers</h5>
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-sm btn-outline-primary mb-3" onclick="loadAllVerifiers()">
+                                    🔄 Refresh
+                                </button>
+                                <div id="verifiers-list" class="verifiers-table">
+                                    <div class="text-center"><span class="spinner-border spinner-border-sm"></span> Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Add Verifier -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Add Verifier</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <input type="text" id="add-verifier-address" class="form-control" placeholder="0x... Ethereum Address">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button class="btn btn-success w-100" onclick="addVerifier()">Add Verifier</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Remove Verifier -->
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Remove Verifier</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <input type="text" id="remove-verifier-address" class="form-control" placeholder="0x... Ethereum Address">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button class="btn btn-danger w-100" onclick="removeVerifier()">Remove Verifier</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Blockchain Explorer Tab -->
+                    <div class="tab-pane fade" id="explorer" role="tabpanel">
+                        <h2>🔍 Blockchain Explorer</h2>
+                        
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">📊 Contract Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Registry Address:</strong></p>
+                                        <code id="explorer-registry-addr" class="d-block mb-3">Loading...</code>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Registry Owner:</strong></p>
+                                        <code id="explorer-owner-addr" class="d-block mb-3">Loading...</code>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Token Address:</strong></p>
+                                        <code id="explorer-token-addr" class="d-block mb-3">Loading...</code>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>VerificationManager Address:</strong></p>
+                                        <code id="explorer-vm-addr" class="d-block mb-3">Loading...</code>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">📈 Registry Statistics</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h3 id="explorer-total-projects" class="text-primary">—</h3>
+                                                <p class="text-muted mb-0">Total Projects</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h3 id="explorer-total-biomass" class="text-success">—</h3>
+                                                <p class="text-muted mb-0">Total Biomass (Tons)</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h3 id="explorer-total-approved" class="text-info">—</h3>
+                                                <p class="text-muted mb-0">Total Approved (Tons)</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">📜 Blockchain Records</h5>
+                            </div>
+                            <div class="card-body">
+                                <button class="btn btn-sm btn-outline-primary mb-3" onclick="loadBlockchainRecords()">
+                                    🔄 Refresh Records
+                                </button>
+                                <div id="explorer-records">
+                                    <div class="text-center"><span class="spinner-border spinner-border-sm"></span> Loading records...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="notification-toast" class="toast" role="alert">
+            <div class="toast-header">
+                <strong class="me-auto" id="toast-title">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toast-message">
+                Message here
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <script>
+        // Load owner on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOwner();
+            loadNetworkInfo();
+            loadAllProjects();
+            
+            // Add event listeners for tab switching to load data
+            document.getElementById('projects-tab').addEventListener('click', function() {
+                loadAllProjects();
+            });
+            
+            document.getElementById('verifiers-tab').addEventListener('click', function() {
+                loadAllVerifiers();
+            });
+            
+            document.getElementById('explorer-tab').addEventListener('click', function() {
+                loadBlockchainExplorer();
+            });
+            
+            // Clear action center when switching away from projects
+            document.getElementById('dashboard-tab').addEventListener('click', function() {
+                document.getElementById('action-project-id').value = '';
+                document.getElementById('current-status').textContent = '— Enter ID above to check status';
+                document.getElementById('action-buttons').style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>
