@@ -366,14 +366,37 @@ function loadProjectForAction() {
                 statusDiv.classList.remove('text-muted');
                 statusDiv.classList.add('badge', 'bg-' + statusColors[status]);
                 
-                // Show action buttons
+                // Show action buttons conditionally based on status
                 actionButtons.style.display = 'block';
                 
-                // Show Issue Credits only if project is Approved (status 3)
-                if (status === 3) {
+                // Get button elements
+                const underReviewBtn = document.querySelector('button[onclick="performAction(\'under-review\')"]');
+                const approveBtn = document.querySelector('button[onclick="performAction(\'approve\')"]');
+                const rejectBtn = document.querySelector('button[onclick="performAction(\'reject\')"]');
+                const issueCreditsSection = document.getElementById('issue-credits-section');
+                const finalizedNotice = document.getElementById('finalized-notice');
+                
+                // Hide all buttons and notices first
+                if (underReviewBtn) underReviewBtn.style.display = 'none';
+                if (approveBtn) approveBtn.closest('.row').style.display = 'none';
+                if (rejectBtn) rejectBtn.style.display = 'none';
+                issueCreditsSection.style.display = 'none';
+                finalizedNotice.style.display = 'none';
+                
+                // Show appropriate UI based on current status
+                if (status === 1) { // Submitted
+                    // Can move to under review
+                    if (underReviewBtn) underReviewBtn.style.display = 'block';
+                } else if (status === 2) { // Under Review
+                    // Can approve or reject
+                    if (approveBtn) approveBtn.closest('.row').style.display = 'block';
+                    if (rejectBtn) rejectBtn.style.display = 'block';
+                } else if (status === 3) { // Approved
+                    // Can issue credits
                     issueCreditsSection.style.display = 'block';
-                } else {
-                    issueCreditsSection.style.display = 'none';
+                } else if (status === 4 || status === 5) { // Tokenized or Rejected
+                    // Project is finalized - show notice
+                    finalizedNotice.style.display = 'block';
                 }
                 
                 // Update full details
